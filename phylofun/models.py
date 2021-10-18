@@ -3,7 +3,7 @@ from django.db import models
 
 class Network(models.Model):
     nodes = models.TextField()
-    edges = models.textField()
+    edges = models.TextField()
 
 
 class RearrangementProblem(models.Model):
@@ -27,12 +27,12 @@ class RearrangementProblem(models.Model):
 
     network1 = models.ForeignKey(
         Network,
-        related_name="problems",
+        related_name="problems1",
         on_delete=models.CASCADE,
     )
     network2 = models.ForeignKey(
         Network,
-        related_name="problems",
+        related_name="problems2",
         on_delete=models.CASCADE,
     )
     partial_isomorphism = models.TextField()
