@@ -13,8 +13,8 @@ class NetworkSerializer(serializers.ModelSerializer):
             if all(nodes_list_check_ints):
                 return nodes_list
             raise serializers.ValidationError("List of nodes contains non-int values.")
-        except serializers.ValidationError as e:
-            raise e("List of nodes is not in list format.")
+        except:
+            raise serializers.ValidationError("List of nodes is not in list format.")
 
     def validate_edges(self, edges):
         try: 
@@ -28,14 +28,9 @@ class NetworkSerializer(serializers.ModelSerializer):
             if all(edge_list_check):
                 return edges
             raise serializers.ValidationError("List contains an invalid edge.")
-        except ValueError as e:       
+        except:       
             raise serializers.ValidationError("Not a valid list of edges")
 
-    def save(self):
-        edges = self.validated_data['edges']
-        nodes = set()
-        for e in edges:
-            nodes.update(e)
           
 
     class Meta:
