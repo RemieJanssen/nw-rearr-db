@@ -2,10 +2,6 @@ import networkx as nx
 import ast
 
 class Network(nx.DiGraph):
-    def __init__(self, nodes, edges):
-        self.nodes = nodes
-        self.edges = edges 
-
     def apply_move(self, move):
         """
         Apply a move to the network.
@@ -42,7 +38,7 @@ class Network(nx.DiGraph):
         pass
 
 class RearrangementProblem(object):
-    def __init__(self, network1, network2, move_type)
+    def __init__(self, network1, network2, move_type):
         self.network1=network1
         self.network2=network2
         self.move_type=move_type
@@ -77,7 +73,7 @@ class Move(object):
 
 
 class Solution(object):
-    def __init__(self, moves_string)
+    def __init__(self, moves_string):
         self.move_sequence = ast.literal_eval(moves_string)
         move_types_tails_boolean = [is_tail_move(move) for move in self.move_sequence]
         self.head_used = len(move_sequence)>0 and not all(move_types_tails_boolean)
