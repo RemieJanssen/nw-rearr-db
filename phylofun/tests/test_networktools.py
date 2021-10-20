@@ -2,6 +2,7 @@ from django.test import TestCase
 from phylofun.network_tools.base import Network
 from phylofun.network_tools.base import Move
 from phylofun.network_tools.base import MoveType
+from phylofun.network_tools.base import InvalidMoveError
 import networkx as nx
 
 class NetworkTestCase(TestCase):
@@ -17,6 +18,17 @@ class NetworkTestCase(TestCase):
 
 
 class MoveTestCase(TestCase):
+    def test_invalid_move(self):
+        try:
+            m = Move(((0,2),(3,1),(4,5)))
+            assert False
+        except InvalidMoveError as e:
+            assert True            
+            
     def test_make_move_head(self):
         m = Move(((0,2),(3,1),(4,5),1))
         assert m.type == MoveType.HEAD
+
+    def test_make_move_tail(self):
+        m = Move(((0,2),(1,3),(4,5),1))
+        assert m.type == MoveType.TAIL

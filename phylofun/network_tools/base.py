@@ -1,6 +1,9 @@
 import networkx as nx
 import ast
 
+class InvalidMoveError(Exception):
+    pass
+
 class Network(nx.DiGraph):
     def apply_move(self, move):
         """
@@ -68,9 +71,11 @@ class Move(object):
             else:
                 self.type=MoveType.HEAD
         except:
-            # vertical move
-            pass
-
+            try:
+                #TODO Write vertial move paring 
+                raise InvalidMoveError
+            except:
+                raise InvalidMoveError
 
 class Solution(object):
     def __init__(self, moves_string):
