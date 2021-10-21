@@ -62,6 +62,7 @@ class NetworkSerializer(serializers.ModelSerializer):
         except SyntaxError:
             raise serializers.ValidationError("Not a valid list of labels")
 
+            
     class Meta:
         model = NetworkModel
         fields = "__all__"
