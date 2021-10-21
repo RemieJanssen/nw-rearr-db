@@ -6,6 +6,7 @@ from phylofun.models import (
 from phylofun.serializers import (
     NetworkSerializer,
     RearrangementProblemSerializer,
+    RearrangementProblemViewSerializer,
     SolutionSerializer,
 )
 from rest_framework.viewsets import ModelViewSet
@@ -25,5 +26,9 @@ class NetworkViewSet(ModelViewSet):
 
 class RearrangementProblemViewSet(ModelViewSet):
     model = RearrangementProblemModel
-    serializer_class = RearrangementProblemSerializer
     queryset = RearrangementProblemModel.objects.all()
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method == "POST":
+            return RearrangementProblemSerializer
+        return RearrangementProblemViewSerializer
