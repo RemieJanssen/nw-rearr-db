@@ -7,6 +7,7 @@ from phylofun.models import (
 )
 from phylofun.network_tools.base import Network
 from rest_framework import serializers
+import networkx as nx
 
 
 class NetworkSerializer(serializers.ModelSerializer):
@@ -35,8 +36,20 @@ class NetworkSerializer(serializers.ModelSerializer):
             ]
             if all(edge_list_check):
                 n = Network(edge_list)
-                if n.is_directed_acyclic_graph():
-                    return edges
+                if nx.is_directed_acyclic_graph(n):
+                    if all(
+                        [
+                            n.degree(v) < 4
+                            and n.in_degree(v) < 3
+                            and n.out_degree(v) < 3
+                            for v in n.nodes
+                        ]
+                    ):
+                        return edge_list
+                    else:
+                        raise serializers.ValidationError(
+                            "The network is not binary."
+                        )
                 else:
                     raise serializers.ValidationError(
                         "The network is not acyclic."
@@ -62,13 +75,29 @@ class NetworkSerializer(serializers.ModelSerializer):
         except SyntaxError:
             raise serializers.ValidationError("Not a valid list of labels")
 
-            
+    def save(self):
+        n = Network()
+        n.add_edges_from(self.validated_data["edges"])
+        print("remie")
+        print(self.validated_data["nodes"])
+        node_set = set(self.validated_data["nodes"])
+        self.validated_data["nodes"] = list(node_set.union(set(n.nodes)))
+
     class Meta:
         model = NetworkModel
         fields = "__all__"
 
 
 class RearrangementProblemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RearrangementProblemModel
+        fields = "__all__"
+
+
+class RearrangementProblemViewSerializer(serializers.ModelSerializer):
+    network1 = NetworkSerializer()
+    network2 = NetworkSerializer()
+
     class Meta:
         model = RearrangementProblemModel
         fields = "__all__"
