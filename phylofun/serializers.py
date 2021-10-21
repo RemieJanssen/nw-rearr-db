@@ -82,6 +82,7 @@ class NetworkSerializer(serializers.ModelSerializer):
         print(self.validated_data["nodes"])
         node_set = set(self.validated_data["nodes"])
         self.validated_data["nodes"] = list(node_set.union(set(n.nodes)))
+        super().save()
 
     class Meta:
         model = NetworkModel
