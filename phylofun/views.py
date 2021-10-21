@@ -1,22 +1,29 @@
-from phylofun.models import Network
-from phylofun.serializers import NetworkSerializer
-from phylofun.models import Solution
-from phylofun.serializers import SolutionSerializer
-from phylofun.models import RearrangementProblem
-from phylofun.serializers import RearrangementProblemSerializer
+from phylofun.models import (
+    NetworkModel,
+    RearrangementProblemModel,
+    SolutionModel,
+)
+from phylofun.serializers import (
+    NetworkSerializer,
+    RearrangementProblemSerializer,
+    SolutionSerializer,
+)
 from rest_framework.viewsets import ModelViewSet
 
+
 class SolutionViewSet(ModelViewSet):
-    model = Solution
+    model = SolutionModel
     serializer_class = SolutionSerializer
-    queryset = Solution.objects.all()
+    queryset = SolutionModel.objects.all()
+
 
 class NetworkViewSet(ModelViewSet):
-    model = Network
+    model = NetworkModel
     serializer_class = NetworkSerializer
-    queryset = Network.objects.all()
+    queryset = NetworkModel.objects.all()
+
 
 class RearrangementProblemViewSet(ModelViewSet):
-    model = RearrangementProblem
+    model = RearrangementProblemModel
     serializer_class = RearrangementProblemSerializer
-    queryset = RearrangementProblem.objects.all()
+    queryset = RearrangementProblemModel.objects.all()
