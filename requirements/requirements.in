@@ -1,6 +1,7 @@
 Django == 3.2.*
 django-model-utils
 djangorestframework==3.12.4
+djangorestframework-filters == 1.0.0.dev0
 factory-boy==3.2.1
 pytest-django
 flake8
