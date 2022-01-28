@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "sortedm2m",
     "rest_framework",
     "corsheaders",
+    "django_filters",
 ]
 
 # Django rest framework
