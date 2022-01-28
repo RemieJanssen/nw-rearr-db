@@ -7,7 +7,7 @@
       git:
         accept_hostkey: yes
         dest: /srv/{{ project_name }}
-        repo: ssh://git@github.com/RemieJanssen/nw-rearr-db.git
+        repo: http://git@github.com/RemieJanssen/nw-rearr-db.git
         version: "{{ checkout_name }}"
 
     - name: "Stop docker"
