@@ -20,15 +20,22 @@ django==3.2.11
     # via
     #   -r requirements/requirements.in
     #   django-cors-headers
+    #   django-filter
     #   django-model-utils
     #   djangorestframework
 django-cors-headers==3.11.0
     # via -r requirements/requirements.in
+django-filter==21.1
+    # via djangorestframework-filters
 django-model-utils==4.2.0
     # via -r requirements/requirements.in
 django-sortedm2m==3.1.1
     # via -r requirements/requirements.in
 djangorestframework==3.12.4
+    # via
+    #   -r requirements/requirements.in
+    #   djangorestframework-filters
+djangorestframework-filters==1.0.0.dev0
     # via -r requirements/requirements.in
 factory-boy==3.2.1
     # via -r requirements/requirements.in
