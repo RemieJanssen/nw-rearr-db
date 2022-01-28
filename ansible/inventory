@@ -1,0 +1,6 @@
+[production]
+136.144.254.62
+[production:vars]
+project_name = phylofun_db
+# use a git tag as checkout name.
+checkout_name = main

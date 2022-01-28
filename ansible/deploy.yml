@@ -1,0 +1,31 @@
+- hosts:
+    - all
+  remote_user: buildout
+
+  tasks:
+    - name: "Checkout correct version from github"
+      git:
+        accept_hostkey: yes
+        dest: /srv/{{ project_name }}
+        repo: ssh://git@github.com/RemieJanssen/nw-rearr-db.git
+        version: "{{ checkout_name }}"
+
+    - name: "Stop docker"
+      shell:
+        cmd: "docker-compose stop"
+        chdir: /srv/{{ project_name }}
+
+    - name: "Build docker"
+      shell:
+        cmd: "docker-compose build"
+        chdir: /srv/{{ project_name }}
+
+    - name: "Start docker"
+      shell:
+        cmd: "docker-compose up -d"
+        chdir: /srv/{{ project_name }}
+
+    - name: "Run migrations"
+      shell:
+        cmd: "docker-compose run --rm web bin/python3 manage.py migrate"
+        chdir: /srv/{{ project_name }}
