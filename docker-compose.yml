@@ -1,20 +1,36 @@
-version: "3"
-   
+version: '2'
 services:
+
+  # Note: symlink docker-compose.development.yml to
+  # docker-compose.override.yml when developing.
+
   db:
     image: postgres
     volumes:
       - ./data/db:/var/lib/postgresql/data
+    restart: unless-stopped
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_PASSWORD: 'buildout'
+      POSTGRES_USER: 'buildout'
+      POSTGRES_DB: 'phylofun_db'
+      PGDATA: '/var/lib/postgresql/data/pgdata'
+
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/code
+    image: nw_rearr_db
+    command: gunicorn -b 0.0.0.0:7770 --workers=3 --preload --max-requests=10000 nw_rearr_db.wsgi
+    # Expose port 8000 to the outside world.
     ports:
-      - "8000:8000"
+      - 8000:8000
+    volumes:
+      - media:/code/var/media
+    environment:
+      # These are passed on from the .env file, if present (on prod/staging).
+      - DJANGO_SETTINGS_MODULE=nw_rearr_db.settings.settings
+    restart: unless-stopped
     depends_on:
       - db
+
+volumes:
+    pgdata:
+    media:
