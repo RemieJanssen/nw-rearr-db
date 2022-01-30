@@ -131,6 +131,7 @@ STATIC_URL = "/static_media/"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://phylofun\.remiejanssen\.nl",
     r"^https://\w+\.remiejanssen\.nl",
 ]
 
