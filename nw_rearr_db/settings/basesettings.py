@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'phylofun.apps.PhylofunConfig',
+    "phylofun.apps.PhylofunConfig",
     "sortedm2m",
     "rest_framework",
     "corsheaders",
