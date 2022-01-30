@@ -1,0 +1,19 @@
+version: '2'
+services:
+
+  # Note: symlink docker-compose.development.yml to
+  # docker-compose.override.yml when developing.
+
+  web:
+    command: "bin/python3 manage.py runserver 0.0.0.0:8000"  
+    # Mount the changing directories that change during development.
+    volumes:
+      - ./requirements/:/code/requirements/
+      - ./phylofun/:/code/phylofun/
+      - ./nw_rearr_db/:/code/nw_rearr_db/
+    # Use the development settings.
+    environment:
+      - DJANGO_SETTINGS_MODULE=nw_rearr_db.settings.developmentsettings
+      - PYTHONUNBUFFERED=1
+      # The next is only for during upgrades.
+      # - PYTHONWARNINGS=always

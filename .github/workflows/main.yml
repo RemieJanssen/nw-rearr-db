@@ -1,0 +1,36 @@
+name: CI
+
+# Run on PR requests. And on master itself.
+on:
+  push:
+    branches:
+      - main
+      - fixes_*
+  pull_request:
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or
+# in parallel
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
+      # access it
+      - uses: actions/checkout@v2
+
+      - name: Override Settings
+        run: ln -s docker-compose.development.yml docker-compose.override.yml
+
+      - name: Build docker
+        run: docker-compose build
+        
+      - name: Django manage.py check
+        run: docker-compose run --rm -e DJANGO_SETTINGS_MODULE=nw_rearr_db.settings.settings web bin/python3 manage.py check --deploy
+
+      - name: Run Tests
+        run: docker-compose run --rm web bin/pytest --disable-warnings
+
+      - name: Flake8
+        run: if docker-compose run --rm web bin/flake8 nw_rearr_db phylofun> flake8.txt; then echo 'flake8 is a success'; else cat flake8.txt; false; fi
