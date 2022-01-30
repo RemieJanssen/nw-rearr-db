@@ -5,6 +5,9 @@ from phylofun.network_tools.base import MoveType
 from phylofun.network_tools.base import InvalidMoveError
 import networkx as nx
 
+from pytest import mark
+
+@mark.model
 class NetworkTestCase(TestCase):
     def test_empty_network(self):
         network = Network()
@@ -16,7 +19,7 @@ class NetworkTestCase(TestCase):
         network.add_nodes_from(node_list)
         assert list(network.nodes) == node_list
 
-
+@mark.model
 class MoveTestCase(TestCase):
     def test_invalid_move(self):
         try:
