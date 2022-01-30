@@ -18,7 +18,7 @@ services:
   web:
     build: .
     image: nw_rearr_db
-    command: gunicorn -b 0.0.0.0:7770 --workers=3 --preload --max-requests=10000 nw_rearr_db.wsgi
+    command: gunicorn -b 0.0.0.0:8000 --workers=3 --preload --max-requests=10000 nw_rearr_db.wsgi
     # Expose port 8000 to the outside world.
     ports:
       - 8000:8000
