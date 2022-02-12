@@ -1,9 +1,29 @@
 import networkx as nx
 import ast
+from copy import deepcopy
 
-
-class InvalidMoveError(Exception):
+class InvalidMoveDefinition(Exception):
     pass
+
+class InvalidMove(Exception):
+    pass
+
+
+def same_labels(node1_attr, node2_attr):
+    return node1_attr.get("label", None) == node2_attr.get("label", None)
+
+def is_isomorphic(nw1, nw2, partial_isomorphism=None):
+    nw1 = deepcopy(nw1)
+    nw2 = deepcopy(nw2)
+
+    partial_isomorphism = partial_isomorphism or []
+    for i,corr in enumerate(partial_isomorphism):
+        if not self.same_labels(nw1.nodes[corr[0]],nw2.nodes[corr[1]]):
+            return False
+        nw1.nodes[corr[0]]["label"] = f"{i}_isom_label"
+        nw2.nodes[corr[1]]["label"] = f"{i}_isom_label"
+    
+    return nx.is_isomorphic(nw1, nw2, node_match=same_labels)
 
 
 class Network(nx.DiGraph):
@@ -11,7 +31,7 @@ class Network(nx.DiGraph):
         super().__init__(*args, **kwargs)
         if "labels" in kwargs:
             for label in kwargs["labels"]:
-                self.nodes[label[0]].label = label[1]
+                self.nodes[label[0]]["label"] = label[1]
 
     def apply_move(self, move):
         """
@@ -37,13 +57,13 @@ class Network(nx.DiGraph):
                         move.origin,
                     ]
                 )
-                return True
+                return
             else:
                 # TODO implement vertical moves
-                return False
+                raise InvalidMove("only tail or head moves are currently valid.")
         else:
             # return False for invalid moves
-            return False
+            raise InvalidMove("Not a valid move")
 
     def apply_move_sequence(self, seq_moves):
         for move in seq_moves:
@@ -59,7 +79,7 @@ class Network(nx.DiGraph):
 
         if move.moving_edge == move.target:
             return False
-        if not self.check_movable(move.moving_edge, moving_endpoint):
+        if not self.check_movable(move.moving_edge, move.moving_node):
             return False
         if move.moving_node == move.moving_edge[0]:
             # tail move, check whether the move.target is below the head of the moving edge
@@ -87,35 +107,35 @@ class Network(nx.DiGraph):
         # So the move is valid
         return True
 
-    def check_movable(self, moving_edge, moving_endpoint):
+    def check_movable(self, moving_edge, moving_node):
         """
         Checks whether an endpoint of an edge is movable.
 
         :param moving_edge: an edge.
-        :param moving_endpoint: a node, specifically, an endpoint of the moving_edge.
+        :param moving_node: a node, specifically, an endpoint of the moving_edge.
         :return: True if the endpoint of the edge is movable, False otherwise.
         """
-        if moving_endpoint == moving_edge[0]:
+        if moving_node == moving_edge[0]:
             # Tail move
-            if self.in_degree(moving_endpoint) in (0, 2):
+            if self.in_degree(moving_node) in (0, 2):
                 # cannot move the tail if it is a reticulation or root
                 return False
-        elif moving_endpoint == moving_edge[1]:
+        elif moving_node == moving_edge[1]:
             # Head move
-            if self.out_degree(moving_endpoint) in (0, 2):
+            if self.out_degree(moving_node) in (0, 2):
                 # cannot move the head if it is a tree node or leaf
                 return False
         else:
             # Moving endpoint is not part of the moving edge
             return False
         # Now check for triangles, by finding the other parent and child of the moving endpoint
-        parent_of_moving_endpoint = self.parent(
-            moving_endpoint, exclude=[moving_edge[0]]
+        parent_of_moving_node = self.parent(
+            moving_node, exclude=[moving_edge[0]]
         )
-        child_of_moving_endpoint = self.child(moving_endpoint, exclude=[moving_edge[1]])
+        child_of_moving_node = self.child(moving_node, exclude=[moving_edge[1]])
         # if there is an edge from the parent to the child, there is a triangle
         # Otherwise, it is a movable edge
-        return not self.has_edge(parent_of_moving_endpoint, child_of_moving_endpoint)
+        return not self.has_edge(parent_of_moving_node, child_of_moving_node)
 
     def child(self, node, exclude=[], randomNodes=False):
         """
@@ -162,55 +182,60 @@ class RearrangementProblem(object):
         self.network2 = network2
         self.move_type = move_type
 
-    @staticmethod
-    def same_labels(node1_attr, node2_attr):
-        return node1_attr["label"] == node2_attr["label"]
-
     def check_solution(self, seq_moves, isomorphism=None):
+        if not all([move.is_type(self.move_type) for move in seq_moves]):
+            return False
 
-        network1_copy = copy(network1)
+        network1_copy = deepcopy(self.network1)
         network1_copy.apply_move_sequence(seq_moves)
         
-        if not isomorphism:
-            return nx.is_isomorphic(network1_copy, network_2, node_match=self.same_labels)
+        return is_isomorphic(network1_copy, self.network2, partial_isomorphism=isomorphism)
 
-        for corr in isomorphism:
-            if not self.same_labels(network1_copy.nodes[corr[0]],network2.nodes[corr[1]]):
-                return False
-        isom_dict = {x[0]:x[1] for x in isomorphism}
-        return nx.is_isomorphic(network1_copy, network_2, node_match=(lambda x,y: isom_dict[x]==y))
+class MoveType:
+    NONE = 0
+    TAIL = 1
+    HEAD = 2
+    RSPR = 3
+    VERTICAL_PLUS = 4 # not currently in use
+    VERTICAL_MINUS = 5 # not currently in use
+
+
 
 class Move(object):
-    class Type:
-        NONE = 0
-        TAIL = 1
-        HEAD = 2
-        RSPR = 3
-
     def __init__(self, move_tuple):
         try:
             # horizontal move
-            self.moving_node = move_tuple[3]
-            self.target = move_tuple[2]
-            self.moving_edge = move_tuple[1]
             self.origin = move_tuple[0]
+            self.moving_edge = move_tuple[1]
+            self.target = move_tuple[2]
+            self.moving_node = move_tuple[3]
+            
             if self.moving_node == self.moving_edge[0]:
-                self.type = self.Type.TAIL
+                self.type = MoveType.TAIL
             else:
-                self.type = self.Type.HEAD
+                self.type = MoveType.HEAD
         except:
+            InvalidMoveDefinition("Not a valid horizontal move")
             try:
                 # TODO Write vertical move paring
-                raise InvalidMoveError
+                raise InvalidMoveDefinition("vertical moves aren't implemented yet")
             except:
-                raise InvalidMoveError
+                raise InvalidMoveDefinition("not a valid move")
+
+    def is_type(self, move_type):
+        if move_type == MoveType.RSPR:
+            return True
+        if self.type == MoveType.NONE:
+            return True
+        return move_type == self.type
+           
 
 
 class Move_Sequence(object):
     def __init__(self, moves_string):
         self.move_sequence = ast.literal_eval(moves_string)
         move_types_tails_boolean = [
-            move == Move.Type.TAIL for move in self.move_sequence
+            move == MoveType.TAIL for move in self.move_sequence
         ]
         self.head_used = len(move_sequence) > 0 and not all(move_types_tails_boolean)
         self.tail_used = len(move_sequence) > 0 and any(move_types_tails_boolean)

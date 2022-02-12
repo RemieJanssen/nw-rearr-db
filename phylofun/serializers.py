@@ -10,8 +10,13 @@ from rest_framework import serializers
 import networkx as nx
 
 
-class NetworkSerializer(serializers.ModelSerializer):
+class NetworkSerializer(serializers.HyperlinkedModelSerializer):
+    labels = serializers.CharField(default="")
+    nodes = serializers.CharField(default="")
+
     def validate_nodes(self, nodes):
+        if nodes=="":
+            return []
         try:
             nodes_list = list(ast.literal_eval(nodes))
             nodes_list_check_ints = [isinstance(x, int) for x in nodes_list]
@@ -20,11 +25,12 @@ class NetworkSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "List of nodes contains non-int values."
             )
-        except SyntaxError:
+        except (SyntaxError, ValueError):
             raise serializers.ValidationError(
                 "List of nodes is not in list format."
             )
 
+    
     def validate_edges(self, edges):
         try:
             edge_list = ast.literal_eval(edges)
@@ -55,10 +61,12 @@ class NetworkSerializer(serializers.ModelSerializer):
                         "The network is not acyclic."
                     )
             raise serializers.ValidationError("List contains an invalid edge.")
-        except SyntaxError:
+        except (SyntaxError, ValueError):
             raise serializers.ValidationError("Not a valid list of edges")
 
     def validate_labels(self, labels):
+        if labels == "":
+            return []
         try:
             label_list = ast.literal_eval(labels)
             label_list_check = [
@@ -72,27 +80,45 @@ class NetworkSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "List contains an invalid labeling."
             )
-        except SyntaxError:
+        except (SyntaxError, ValueError):
             raise serializers.ValidationError("Not a valid list of labels")
 
     def save(self):
         n = Network()
         n.add_edges_from(self.validated_data["edges"])
-        print("remie")
-        print(self.validated_data["nodes"])
         node_set = set(self.validated_data["nodes"])
         self.validated_data["nodes"] = list(node_set.union(set(n.nodes)))
         super().save()
 
     class Meta:
         model = NetworkModel
-        fields = "__all__"
+        fields = ("id","url","nodes","edges","labels")
+        extra_kwargs = {
+            "url": {
+                "lookup_field": "pk",
+                "view_name": "network-detail",    
+            },  
+        }
 
 
-class RearrangementProblemSerializer(serializers.ModelSerializer):
+class RearrangementProblemSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = RearrangementProblemModel
         fields = "__all__"
+        extra_kwargs = {
+            "url": {
+                "lookup_field": "pk",
+                "view_name": "rearrangementproblem-detail",    
+            },  
+            "network1": {
+                "lookup_field": "pk",
+                "view_name": "network-detail",    
+            },  
+            "network2": {
+                "lookup_field": "pk",
+                "view_name": "network-detail",    
+            },  
+        }
 
 
 class RearrangementProblemViewSerializer(serializers.ModelSerializer):
@@ -128,7 +154,7 @@ class SolutionSerializer(serializers.ModelSerializer):
         pass    
         
     def validate(self, data):
-        #check whether the isomorphism covers all nodes of both networks
+        #check whether the partial isomorphism covers all nodes of both networks
         isomorphism = data.get("isomorphism", None)
         if isomorphism:
             isomorphism_list = ast.literal_eval(isomorphism)
@@ -139,7 +165,8 @@ class SolutionSerializer(serializers.ModelSerializer):
             if not (len(nodes_nw_1)==len(nodes_nw_1_set) and len(nodes_nw_2)==len(nodes_nw_2_set)):
                 raise serializers.ValidationError(
                     "Each node can be mapped only once."
-                )            
+                )  
+            print(set(nodes_nw_1),set(data["problem"].network1.nodes))
             if not set(nodes_nw_1)==set(data["problem"].network1.nodes):
                 raise serializers.ValidationError(
                     "Isomorphism nodes should cover all nodes of network 1."
@@ -161,5 +188,15 @@ class SolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = SolutionModel
         fields = "__all__"
+        extra_kwargs = {
+            "url": {
+                "lookup_field": "pk",
+                "view_name": "solution-detail",    
+            },  
+            "rearrangementproblem": {
+                "lookup_field": "pk",
+                "view_name": "rearrangementproblem-detail",    
+            },  
+        }
     
         
