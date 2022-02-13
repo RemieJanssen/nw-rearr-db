@@ -1,11 +1,13 @@
 from django.test import TestCase
-from phylofun.network_tools.base import Network
-from phylofun.network_tools.base import Move
-from phylofun.network_tools.base import MoveType
-from phylofun.network_tools.base import InvalidMoveError
-import networkx as nx
-
 from pytest import mark
+
+from phylofun.network_tools.base import (
+    InvalidMoveDefinition,
+    Move,
+    MoveType,
+    Network,
+)
+
 
 @mark.model
 class NetworkTestCase(TestCase):
@@ -15,23 +17,24 @@ class NetworkTestCase(TestCase):
 
     def test_nodes_only_network(self):
         network = Network()
-        node_list = [0,1,2]
+        node_list = [0, 1, 2]
         network.add_nodes_from(node_list)
         assert list(network.nodes) == node_list
+
 
 @mark.model
 class MoveTestCase(TestCase):
     def test_invalid_move(self):
         try:
-            m = Move(((0,2),(3,1),(4,5)))
+            Move(((0, 2), (3, 1), (4, 5)))
             assert False
-        except InvalidMoveError as e:
-            assert True            
-            
+        except InvalidMoveDefinition:
+            assert True
+
     def test_make_move_head(self):
-        m = Move(((0,2),(3,1),(4,5),1))
+        m = Move(((0, 2), (3, 1), (4, 5), 1))
         assert m.type == MoveType.HEAD
 
     def test_make_move_tail(self):
-        m = Move(((0,2),(1,3),(4,5),1))
+        m = Move(((0, 2), (1, 3), (4, 5), 1))
         assert m.type == MoveType.TAIL
