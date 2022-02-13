@@ -10,7 +10,7 @@ repos:
   rev: 21.10b0
   hooks:
   - id: black
-    exclude: 'migrations*|urls*|setup.py'
+    exclude: 'migrations*|urls*|setup.py|models.py'
     args: [--line-length=79]
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v2.3.0
@@ -19,4 +19,4 @@ repos:
   - id: check-yaml
   - id: flake8
     # NB The "exclude" setting in setup.cfg is ignored by pre-commit
-    exclude: 'migrations*|urls*|settings*'
+    exclude: 'migrations*|urls*|settings*|models.py'
