@@ -39,7 +39,9 @@ class NetworkSerializer(serializers.HyperlinkedModelSerializer):
         n = Network()
         n.add_edges_from(self.validated_data["edges"])
         node_set = set(self.validated_data["nodes"])
+        print(self.validated_data)
         self.validated_data["nodes"] += list(set(n.nodes).difference(node_set))
+        print(self.validated_data)
         super().save()
 
     class Meta:

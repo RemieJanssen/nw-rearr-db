@@ -1,4 +1,5 @@
 from django.db import models
+
 from .rearrangementproblem import RearrangementProblemModel
 
 
@@ -14,5 +15,5 @@ class RearrangementSolutionModel(models.Model):
         related_name="solutions",
         on_delete=models.CASCADE,
     )
-    sequence = models.TextField()
-    isomorphism = models.TextField()
+    sequence = models.JSONField()
+    isomorphism = models.JSONField()
