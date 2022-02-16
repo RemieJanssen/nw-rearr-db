@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from phylofun.models import RearrangementSolutionModel
+from phylofun.network_tools.base import Move, MoveType
 
 
 class MoveField(serializers.DictField):
@@ -26,6 +27,7 @@ class MoveField(serializers.DictField):
             raise serializers.ValidationError(
                 f"move_type {data_dict['move_type']} is not supported."
             )
+        data_dict["move_type"] = MoveType[data_dict["move_type"]]
         return data_dict
 
 
@@ -42,10 +44,15 @@ class RearrangementSolutionSerializer(serializers.ModelSerializer):
     def validate(self, data):
         # check whether the partial isomorphism covers all nodes of both networks
         isomorphism = data.get("isomorphism", None)
+        print("remie")
+        print(isomorphism)
+        print(data["problem"])
         problem = data["problem"].rearrangement_problem
         network1 = problem.network1
         network2 = problem.network2
-        print(isomorphism)
+        print(problem)
+        print(network1)
+        print(network2)
         if isomorphism:
             nodes_nw_1 = [x[0] for x in isomorphism]
             nodes_nw_1_set = set(nodes_nw_1)
@@ -70,8 +77,11 @@ class RearrangementSolutionSerializer(serializers.ModelSerializer):
 
         # check whether the sequence solves the problem
         # TODO should return the isomorphism, of False
+        print("iajs", data["sequence"])
+        move_seq = [Move(**x) for x in data["sequence"]]
+        print("yoyo", move_seq)
         solution_valid = problem.check_solution(
-            data["sequence"], isomorphism=isomorphism
+            move_seq, isomorphism=isomorphism
         )
         if not solution_valid:
 

@@ -2,6 +2,7 @@ from django.db import models
 
 from phylofun.network_tools.base import RearrangementProblem
 
+from .move import MOVE_TYPES, MoveType
 from .network import NetworkModel
 
 
@@ -10,19 +11,6 @@ class RearrangementProblemModel(models.Model):
     A rearrangement problem consists of two networks and a type of move
     that may be used to turn one network into the other.
     """
-
-    class MoveType:
-        NONE = "NONE"
-        TAIL = "TAIL"
-        HEAD = "HEAD"
-        RSPR = "RSPR"
-
-    MOVE_TYPES = (
-        (MoveType.NONE, "no moves"),
-        (MoveType.TAIL, "tail moves"),
-        (MoveType.HEAD, "head moves"),
-        (MoveType.RSPR, "rSPR moves"),
-    )
 
     network1 = models.ForeignKey(
         NetworkModel,

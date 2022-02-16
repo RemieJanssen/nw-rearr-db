@@ -1,9 +1,14 @@
-import networkx as nx
 import ast
 from copy import deepcopy
+from enum import Enum
+from random import getrandbits
+
+import networkx as nx
+
 
 class InvalidMoveDefinition(Exception):
     pass
+
 
 class InvalidMove(Exception):
     pass
@@ -12,23 +17,25 @@ class InvalidMove(Exception):
 def same_labels(node1_attr, node2_attr):
     return node1_attr.get("label", None) == node2_attr.get("label", None)
 
+
 def is_isomorphic(nw1, nw2, partial_isomorphism=None):
     nw1 = deepcopy(nw1)
     nw2 = deepcopy(nw2)
 
     partial_isomorphism = partial_isomorphism or []
-    for i,corr in enumerate(partial_isomorphism):
-        if not self.same_labels(nw1.nodes[corr[0]],nw2.nodes[corr[1]]):
+    for i, corr in enumerate(partial_isomorphism):
+        if not same_labels(nw1.nodes[corr[0]], nw2.nodes[corr[1]]):
             return False
         nw1.nodes[corr[0]]["label"] = f"{i}_isom_label"
         nw2.nodes[corr[1]]["label"] = f"{i}_isom_label"
-    
+
     return nx.is_isomorphic(nw1, nw2, node_match=same_labels)
 
 
 class Network(nx.DiGraph):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.add_nodes_from(kwargs["nodes"])
         if "labels" in kwargs:
             for label in kwargs["labels"]:
                 self.nodes[label[0]]["label"] = label[1]
@@ -39,7 +46,7 @@ class Network(nx.DiGraph):
         returns True if successful, and False otherwise.
         """
         if self.check_valid(move):
-            if move.type in [MoveType.TAIL, MoveType.HEAD]:
+            if move.move_type in [MoveType.TAIL, MoveType.HEAD]:
                 if move.moving_node in move.target:
                     # move does not impact the network
                     return True
@@ -58,9 +65,10 @@ class Network(nx.DiGraph):
                     ]
                 )
                 return
-            else:
-                # TODO implement vertical moves
-                raise InvalidMove("only tail or head moves are currently valid.")
+            if move.move_type in [MoveType.NONE]:
+                return
+            # TODO implement vertical moves
+            raise InvalidMove("only tail or head moves are currently valid.")
         else:
             # return False for invalid moves
             raise InvalidMove("Not a valid move")
@@ -76,6 +84,8 @@ class Network(nx.DiGraph):
         :param move: an move of tyupe Move
         :return: True if the move is allowed, False otherwise.
         """
+        if move.move_type == MoveType.NONE:
+            return True
 
         if move.moving_edge == move.target:
             return False
@@ -132,7 +142,9 @@ class Network(nx.DiGraph):
         parent_of_moving_node = self.parent(
             moving_node, exclude=[moving_edge[0]]
         )
-        child_of_moving_node = self.child(moving_node, exclude=[moving_edge[1]])
+        child_of_moving_node = self.child(
+            moving_node, exclude=[moving_edge[1]]
+        )
         # if there is an edge from the parent to the child, there is a triangle
         # Otherwise, it is a movable edge
         return not self.has_edge(parent_of_moving_node, child_of_moving_node)
@@ -151,7 +163,7 @@ class Network(nx.DiGraph):
             if c not in exclude:
                 if not randomNodes:
                     return c
-                elif child == None or random.getrandbits(1):
+                elif child is None or getrandbits(1):
                     # As there are at most two children, we can simply replace the previous child with probability .5 to get a random parent
                     child = c
         return child
@@ -170,7 +182,7 @@ class Network(nx.DiGraph):
             if p not in exclude:
                 if not randomNodes:
                     return p
-                elif parent == None or random.getrandbits(1):
+                elif parent is None or getrandbits(1):
                     # As there are at most two parents, we can simply replace the previous parent with probability .5 to get a random parent
                     parent = p
         return parent
@@ -188,47 +200,53 @@ class RearrangementProblem(object):
 
         network1_copy = deepcopy(self.network1)
         network1_copy.apply_move_sequence(seq_moves)
-        
-        return is_isomorphic(network1_copy, self.network2, partial_isomorphism=isomorphism)
 
-class MoveType:
-    NONE = 0
-    TAIL = 1
-    HEAD = 2
-    RSPR = 3
-    VERTICAL_PLUS = 4 # not currently in use
-    VERTICAL_MINUS = 5 # not currently in use
+        return is_isomorphic(
+            network1_copy, self.network2, partial_isomorphism=isomorphism
+        )
 
+
+class MoveType(str, Enum):
+    NONE = "NONE"
+    TAIL = "TAIL"
+    HEAD = "HEAD"
+    RSPR = "RSPR"
+    VPLU = "VPLU"  # not currently in use
+    VMIN = "VMIN"  # not currently in use
 
 
 class Move(object):
-    def __init__(self, move_tuple):
+    def __init__(self, *args, **kwargs):
+        if kwargs["move_type"] == MoveType.NONE:
+            self.move_type = MoveType.NONE
+            return
         try:
             # horizontal move
-            self.origin = move_tuple[0]
-            self.moving_edge = move_tuple[1]
-            self.target = move_tuple[2]
-            self.moving_node = move_tuple[3]
-            
+            self.origin = kwargs["origin"]
+            self.moving_edge = kwargs["moving_edge"]
+            self.target = kwargs["target"]
+            self.moving_node = kwargs["moving_node"]
+
             if self.moving_node == self.moving_edge[0]:
                 self.type = MoveType.TAIL
             else:
                 self.type = MoveType.HEAD
-        except:
+        except KeyError:
             InvalidMoveDefinition("Not a valid horizontal move")
             try:
                 # TODO Write vertical move paring
-                raise InvalidMoveDefinition("vertical moves aren't implemented yet")
-            except:
+                raise InvalidMoveDefinition(
+                    "vertical moves aren't implemented yet"
+                )
+            except Exception:
                 raise InvalidMoveDefinition("not a valid move")
 
     def is_type(self, move_type):
         if move_type == MoveType.RSPR:
             return True
-        if self.type == MoveType.NONE:
+        if self.move_type == MoveType.NONE:
             return True
         return move_type == self.type
-           
 
 
 class Move_Sequence(object):
@@ -237,5 +255,9 @@ class Move_Sequence(object):
         move_types_tails_boolean = [
             move == MoveType.TAIL for move in self.move_sequence
         ]
-        self.head_used = len(move_sequence) > 0 and not all(move_types_tails_boolean)
-        self.tail_used = len(move_sequence) > 0 and any(move_types_tails_boolean)
+        self.head_used = len(self.move_sequence) > 0 and not all(
+            move_types_tails_boolean
+        )
+        self.tail_used = len(self.move_sequence) > 0 and any(
+            move_types_tails_boolean
+        )

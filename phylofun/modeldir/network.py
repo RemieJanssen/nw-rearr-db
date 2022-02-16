@@ -10,6 +10,8 @@ class NetworkModel(models.Model):
 
     @property
     def network(self):
+        print("yo")
+        print(self.nodes)
         network = Network(nodes=self.nodes, labels=self.labels)
         network.add_edges_from(self.edges)
         return network
