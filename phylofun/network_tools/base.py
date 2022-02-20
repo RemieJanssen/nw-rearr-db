@@ -34,44 +34,42 @@ def is_isomorphic(nw1, nw2, partial_isomorphism=None):
 
 class Network(nx.DiGraph):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.add_nodes_from(kwargs["nodes"])
-        if "labels" in kwargs:
-            for label in kwargs["labels"]:
-                self.nodes[label[0]]["label"] = label[1]
+        edges = kwargs.get("edges", [])
+        super().__init__(edges, *args, **kwargs)
+        self.add_nodes_from(kwargs.get("nodes", []))
+        for label in kwargs.get("labels", []):
+            self.nodes[label[0]]["label"] = label[1]
 
     def apply_move(self, move):
         """
         Apply a move to the network.
         returns True if successful, and False otherwise.
         """
-        if self.check_valid(move):
-            if move.move_type in [MoveType.TAIL, MoveType.HEAD]:
-                if move.moving_node in move.target:
-                    # move does not impact the network
-                    return True
-                self.remove_edges_from(
-                    [
-                        (move.origin[0], move.moving_node),
-                        (move.moving_node, move.origin[1]),
-                        move.target,
-                    ]
-                )
-                self.add_edges_from(
-                    [
-                        (move.target[0], move.moving_node),
-                        (move.moving_node, move.target[1]),
-                        move.origin,
-                    ]
-                )
-                return
-            if move.move_type in [MoveType.NONE]:
-                return
-            # TODO implement vertical moves
-            raise InvalidMove("only tail or head moves are currently valid.")
-        else:
-            # return False for invalid moves
-            raise InvalidMove("Not a valid move")
+        self.check_valid(move)
+
+        if move.move_type in [MoveType.TAIL, MoveType.HEAD]:
+            if move.moving_node in move.target:
+                # move does not impact the network
+                return True
+            self.remove_edges_from(
+                [
+                    (move.origin[0], move.moving_node),
+                    (move.moving_node, move.origin[1]),
+                    move.target,
+                ]
+            )
+            self.add_edges_from(
+                [
+                    (move.target[0], move.moving_node),
+                    (move.moving_node, move.target[1]),
+                    move.origin,
+                ]
+            )
+            return
+        if move.move_type in [MoveType.NONE]:
+            return
+        # TODO implement vertical moves
+        raise InvalidMove("only tail or head moves are currently valid.")
 
     def apply_move_sequence(self, seq_moves):
         for move in seq_moves:
@@ -81,41 +79,30 @@ class Network(nx.DiGraph):
         """
         Checks whether a move is valid.
 
-        :param move: an move of tyupe Move
-        :return: True if the move is allowed, False otherwise.
+        :param move: a move of type Move
+        :return: void
         """
         if move.move_type == MoveType.NONE:
-            return True
+            return
 
-        if move.moving_edge == move.target:
-            return False
-        if not self.check_movable(move.moving_edge, move.moving_node):
-            return False
-        if move.moving_node == move.moving_edge[0]:
-            # tail move, check whether the move.target is below the head of the moving edge
-            if nx.has_path(self, move.moving_edge[1], move.target[0]):
-                # the move would create a cycle
-                return False
-            if move.target[1] == move.moving_edge[1]:
-                # the move would create parallel edges
-                return False
-        elif move.moving_node == move.moving_edge[1]:
-            # head move, check whether the move.target is above the tail of the moving edge
-            if nx.has_path(self, move.target[1], move.moving_edge[0]):
-                # the move would create a cycle
-                return False
-            if move.target[0] == move.moving_edge[0]:
-                # the move would create parallel edges
-                return False
-        else:
-            # The moving endpoint is not part of the moving edge
-            # Checked in CheckMovable as well, redundant?!
-            return False
-        # No parallel edges at start location
-        # No cycle
-        # No parallel edges at end location
-        # So the move is valid
-        return True
+        if move.is_type(MoveType.RSPR):
+            if move.moving_edge == move.target:
+                raise InvalidMove("moving edge must not be the target edge.")
+            if not self.check_movable(move.moving_edge, move.moving_node):
+                raise InvalidMove("the edge is not movable")
+            if move.is_type(MoveType.TAIL):
+                if nx.has_path(self, move.moving_edge[1], move.target[0]):
+                    raise InvalidMove("the move would create a cycle")
+                if move.target[1] == move.moving_edge[1]:
+                    raise InvalidMove("the move would create parallel edges")
+                return
+            if move.is_type(MoveType.HEAD):
+                if nx.has_path(self, move.target[1], move.moving_edge[0]):
+                    raise InvalidMove("the move would create a cycle")
+                if move.target[0] == move.moving_edge[0]:
+                    raise InvalidMove("the move would create parallel edges")
+            return
+        raise InvalidMove("Only rSPR moves are supported currently")
 
     def check_movable(self, moving_edge, moving_node):
         """
@@ -213,40 +200,69 @@ class MoveType(str, Enum):
     RSPR = "RSPR"
     VPLU = "VPLU"  # not currently in use
     VMIN = "VMIN"  # not currently in use
+    VERT = "VERT"
 
 
 class Move(object):
     def __init__(self, *args, **kwargs):
-        if kwargs["move_type"] == MoveType.NONE:
-            self.move_type = MoveType.NONE
-            return
         try:
-            # horizontal move
-            self.origin = kwargs["origin"]
-            self.moving_edge = kwargs["moving_edge"]
-            self.target = kwargs["target"]
-            self.moving_node = kwargs["moving_node"]
-
-            if self.moving_node == self.moving_edge[0]:
-                self.type = MoveType.TAIL
-            else:
-                self.type = MoveType.HEAD
+            self.move_type = kwargs["move_type"]
         except KeyError:
-            InvalidMoveDefinition("Not a valid horizontal move")
+            raise InvalidMoveDefinition("Missing move_type.")
+
+        # None type move
+        if self.move_type == MoveType.NONE:
+            return
+
+        # TAIL/HEAD move (i.e. RSPR/horizontal)
+        if self.move_type == MoveType.RSPR:
+            raise InvalidMoveDefinition(
+                "rSPR moves must be defined as moves of type tail or head."
+            )
+        if self.move_type in [MoveType.TAIL, MoveType.HEAD]:
             try:
-                # TODO Write vertical move paring
+                self.origin = kwargs["origin"]
+                self.moving_edge = kwargs["moving_edge"]
+                self.target = kwargs["target"]
+            except KeyError:
                 raise InvalidMoveDefinition(
-                    "vertical moves aren't implemented yet"
+                    "Missing one of origin, moving_edge, or target."
                 )
-            except Exception:
-                raise InvalidMoveDefinition("not a valid move")
+
+            if self.move_type == MoveType.TAIL:
+                self.moving_node = self.moving_edge[0]
+            else:
+                self.moving_node = self.moving_edge[1]
+
+            return
+
+        # TODO Write vertical move parsing
+        if self.move_type == MoveType.VPLU:
+            try:
+                self.start_edge = kwargs["start_edge"]
+                self.end_edge = kwargs["end_edge"]
+                self.start_node = kwargs["start_node"]
+                self.end_node = kwargs["end_node"]
+            except KeyError:
+                raise InvalidMoveDefinition(
+                    "Missing one of start_edge, end_edge, start_node, or end_node."
+                )
+            return
 
     def is_type(self, move_type):
-        if move_type == MoveType.RSPR:
+        if (
+            self.move_type == MoveType.NONE
+            or (
+                move_type == MoveType.RSPR
+                and self.move_type in [MoveType.TAIL, MoveType.HEAD]
+            )
+            or (
+                move_type == MoveType.VERT
+                and self.move_type in [MoveType.VPLU, MoveType.VMIN]
+            )
+        ):
             return True
-        if self.move_type == MoveType.NONE:
-            return True
-        return move_type == self.type
+        return move_type == self.move_type
 
 
 class Move_Sequence(object):
