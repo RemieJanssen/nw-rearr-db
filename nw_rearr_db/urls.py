@@ -16,7 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from phylofun.api import urls as phylofun_api
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('phylofun/', include('phylofun.urls'))
+    path('api/', include(phylofun_api, namespace="api"))
 ]
