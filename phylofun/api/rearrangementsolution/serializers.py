@@ -7,7 +7,6 @@ from phylofun.network_tools import Move, MoveType
 class MoveField(serializers.DictField):
     def to_internal_value(self, data):
         data_dict = super().to_internal_value(data)
-        print(data_dict, len(data_dict), data_dict["move_type"] == "NONE")
         if "move_type" not in data_dict:
             raise serializers.ValidationError("A move_type is mandatory.")
         if data_dict["move_type"] == "NONE":
@@ -44,15 +43,9 @@ class RearrangementSolutionSerializer(serializers.ModelSerializer):
     def validate(self, data):
         # check whether the partial isomorphism covers all nodes of both networks
         isomorphism = data.get("isomorphism", None)
-        print("remie")
-        print(isomorphism)
-        print(data["problem"])
         problem = data["problem"].rearrangement_problem
         network1 = problem.network1
         network2 = problem.network2
-        print(problem)
-        print(network1)
-        print(network2)
         if isomorphism:
             nodes_nw_1 = [x[0] for x in isomorphism]
             nodes_nw_1_set = set(nodes_nw_1)
@@ -77,9 +70,7 @@ class RearrangementSolutionSerializer(serializers.ModelSerializer):
 
         # check whether the sequence solves the problem
         # TODO should return the isomorphism, of False
-        print("iajs", data["sequence"])
         move_seq = [Move(**x) for x in data["sequence"]]
-        print("yoyo", move_seq)
         solution_valid = problem.check_solution(
             move_seq, isomorphism=isomorphism
         )
