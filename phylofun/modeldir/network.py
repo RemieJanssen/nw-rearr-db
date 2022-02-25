@@ -4,9 +4,9 @@ from phylofun.network_tools import Network
 
 
 class NetworkModel(models.Model):
-    nodes = models.JSONField()
-    edges = models.JSONField()
-    labels = models.JSONField()
+    nodes = models.JSONField(default=[])
+    edges = models.JSONField(default=[])
+    labels = models.JSONField(default=[])
 
     @property
     def network(self):

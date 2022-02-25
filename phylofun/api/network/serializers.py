@@ -11,37 +11,41 @@ class NetworkSerializer(serializers.HyperlinkedModelSerializer):
             child=serializers.IntegerField(),
             min_length=2,
             max_length=2,
-        )
+        ),
+        default=[],
     )
     edges = serializers.ListField(
         child=serializers.ListField(
             child=serializers.IntegerField(),
             min_length=2,
             max_length=2,
-        )
+        ),
+        default=[],
     )
-    nodes = serializers.ListField(child=serializers.IntegerField())
+    nodes = serializers.ListField(
+        child=serializers.IntegerField(),
+        default=[],
+    )
 
     def validate_edges(self, edges):
-        n = Network(edges)
+        n = Network(edges=edges)
         if not nx.is_directed_acyclic_graph(n):
             raise serializers.ValidationError("The network is not acyclic.")
-        if not all(
-            [
-                n.degree(v) < 4 and n.in_degree(v) < 3 and n.out_degree(v) < 3
-                for v in n.nodes
-            ]
-        ):
-            raise serializers.ValidationError("The network is not binary.")
+        #        if not all(
+        #            [
+        #                n.degree(v) < 4 and n.in_degree(v) < 3 and n.out_degree(v) < 3
+        #                for v in n.nodes
+        #            ]
+        #        ):
+        #            raise serializers.ValidationError("The network is not binary.")
         return edges
 
     def save(self):
         n = Network()
-        n.add_edges_from(self.validated_data["edges"])
+        n.add_edges_from(self.validated_data.get("edges", []))
+        self.validated_data["nodes"] = self.validated_data.get("nodes", [])
         node_set = set(self.validated_data["nodes"])
-        print(self.validated_data)
         self.validated_data["nodes"] += list(set(n.nodes).difference(node_set))
-        print(self.validated_data)
         super().save()
 
     class Meta:
