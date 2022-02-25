@@ -1,4 +1,4 @@
-from phylofun.network_tools.base import MoveType
+from phylofun.network_tools import MoveType
 
 MOVE_TYPES = (
     (MoveType.NONE, "no moves"),

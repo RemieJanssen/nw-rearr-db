@@ -1,6 +1,6 @@
 from django.db import models
 
-from phylofun.network_tools.base import Network
+from phylofun.network_tools import Network
 
 
 class NetworkModel(models.Model):
@@ -10,8 +10,8 @@ class NetworkModel(models.Model):
 
     @property
     def network(self):
-        print("yo")
-        print(self.nodes)
-        network = Network(nodes=self.nodes, labels=self.labels)
-        network.add_edges_from(self.edges)
-        return network
+        return Network(
+            nodes=self.nodes,
+            edges=self.edges,
+            labels=self.labels,
+        )

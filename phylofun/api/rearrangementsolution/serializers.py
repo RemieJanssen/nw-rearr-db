@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from phylofun.models import RearrangementSolutionModel
-from phylofun.network_tools.base import Move, MoveType
+from phylofun.network_tools import Move, MoveType
 
 
 class MoveField(serializers.DictField):

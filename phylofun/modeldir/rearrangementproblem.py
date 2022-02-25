@@ -1,6 +1,6 @@
 from django.db import models
 
-from phylofun.network_tools.base import RearrangementProblem
+from phylofun.network_tools import RearrangementProblem
 
 from .move import MOVE_TYPES, MoveType
 from .network import NetworkModel

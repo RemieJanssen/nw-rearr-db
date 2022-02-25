@@ -2,7 +2,7 @@ import networkx as nx
 from rest_framework import serializers
 
 from phylofun.models import NetworkModel
-from phylofun.network_tools.base import Network
+from phylofun.network_tools import Network
 
 
 class NetworkSerializer(serializers.HyperlinkedModelSerializer):
