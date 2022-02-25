@@ -21,3 +21,5 @@ class RearrangementSolutionFactory(factory.django.DjangoModelFactory):
         model = models.RearrangementSolutionModel
 
     problem = factory.SubFactory(RearrangementProblemFactory)
+    sequence = []
+    isomorphism = []

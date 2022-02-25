@@ -14,14 +14,14 @@ class MoveField(serializers.DictField):
                 raise serializers.ValidationError(
                     "move_type NONE does not take additional data."
                 )
-        elif data_dict["move_type"] in ["TAIL", "HEAD", "RSPR"] and not set(
-            data_dict.keys()
-        ) == set(
-            ["move_type", "origin", "moving_edge", "target", "moving_node"]
-        ):
-            raise serializers.ValidationError(
-                "move_type NONE does not take additional data."
-            )
+
+        elif data_dict["move_type"] in ["TAIL", "HEAD", "RSPR"]:
+            if not set(data_dict.keys()) == set(
+                ["move_type", "origin", "moving_edge", "target"]
+            ):
+                raise serializers.ValidationError(
+                    f"One of origin, moving_edge, or target is missing in a {data_dict['move_type']} move"
+                )
         else:
             raise serializers.ValidationError(
                 f"move_type {data_dict['move_type']} is not supported."
@@ -30,7 +30,7 @@ class MoveField(serializers.DictField):
         return data_dict
 
 
-class RearrangementSolutionSerializer(serializers.ModelSerializer):
+class RearrangementSolutionSerializer(serializers.HyperlinkedModelSerializer):
     sequence = serializers.ListField(child=MoveField())
     isomorphism = serializers.ListField(
         child=serializers.ListField(
@@ -89,7 +89,7 @@ class RearrangementSolutionSerializer(serializers.ModelSerializer):
                 "lookup_field": "pk",
                 "view_name": "api:rearrangementsolution-detail",
             },
-            "rearrangementproblem": {
+            "problem": {
                 "lookup_field": "pk",
                 "view_name": "api:rearrangementproblem-detail",
             },
