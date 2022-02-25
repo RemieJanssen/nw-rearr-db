@@ -62,7 +62,7 @@ class RearrangementTestCase(TestCase):
         )
         assert problem.check_solution([m], isomorphism=[(4, 4), (3, 2)])
 
-    def test_check_solution_valid_invalid_partial_isom(self):
+    def test_check_solution_valid_invalid_partial_isom_label(self):
         problem = self.setup_simple_problem()
         m = Move(
             origin=(2, 5),
@@ -70,7 +70,17 @@ class RearrangementTestCase(TestCase):
             target=(2, 4),
             move_type=MoveType.HEAD,
         )
-        assert not problem.check_solution([m], isomorphism=[(4, 5), (3, 2)])
+        assert not problem.check_solution([m], isomorphism=[(4, 5)])
+
+    def test_check_solution_valid_invalid_partial_isom_shape(self):
+        problem = self.setup_simple_problem()
+        m = Move(
+            origin=(2, 5),
+            moving_edge=(1, 3),
+            target=(2, 4),
+            move_type=MoveType.HEAD,
+        )
+        assert not problem.check_solution([m], isomorphism=[(3, 3)])
 
     def test_check_solution_wrong_move_type(self):
         problem = self.setup_simple_problem()
