@@ -42,6 +42,47 @@ class RearrangementTestCase(TestCase):
         problem.network1.apply_move(m)
         assert True
 
+    def test_check_solution_valid(self):
+        problem = self.setup_simple_problem()
+        m = Move(
+            origin=(2, 5),
+            moving_edge=(1, 3),
+            target=(2, 4),
+            move_type=MoveType.HEAD,
+        )
+        assert problem.check_solution([m])
+
+    def test_check_solution_valid_partial_isom(self):
+        problem = self.setup_simple_problem()
+        m = Move(
+            origin=(2, 5),
+            moving_edge=(1, 3),
+            target=(2, 4),
+            move_type=MoveType.HEAD,
+        )
+        assert problem.check_solution([m], isomorphism=[(4, 4), (3, 2)])
+
+    def test_check_solution_valid_invalid_partial_isom(self):
+        problem = self.setup_simple_problem()
+        m = Move(
+            origin=(2, 5),
+            moving_edge=(1, 3),
+            target=(2, 4),
+            move_type=MoveType.HEAD,
+        )
+        assert not problem.check_solution([m], isomorphism=[(4, 5), (3, 2)])
+
+    def test_check_solution_wrong_move_type(self):
+        problem = self.setup_simple_problem()
+        problem.move_type = MoveType.TAIL
+        m = Move(
+            origin=(2, 5),
+            moving_edge=(1, 3),
+            target=(2, 4),
+            move_type=MoveType.HEAD,
+        )
+        assert not problem.check_solution([m], isomorphism=[(4, 5), (3, 2)])
+
     def test_apply_invalid_head_move_cycle(self):
         m = Move(
             origin=(2, 5),

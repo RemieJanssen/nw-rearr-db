@@ -39,6 +39,22 @@ class NetworkTestCase(TestCase):
         assert set(network.nodes) == set([0, 1, 2, 10])
         assert network.nodes[10]["label"] == 2
 
+    def test_child(self):
+        edges = [(0, 1), (1, 2), (1, 3)]
+        network = Network(edges=edges)
+        assert network.child(0) == 1
+        assert network.child(1, exclude=[2, 5]) == 3
+        with mock.patch("random.getrandbits", return_value=1):
+            assert network.child(1, randomNodes=True) == 3
+
+    def test_parent(self):
+        edges = [(0, 1), (2, 1), (1, 3)]
+        network = Network(edges=edges)
+        assert network.parent(3) == 1
+        assert network.parent(1, exclude=[2, 5]) == 0
+        with mock.patch("random.getrandbits", return_value=1):
+            assert network.parent(1, randomNodes=True) == 2
+
     def test_apply_tail_move_changes(self):
         edges = [(0, 1), (1, 5), (1, 2), (2, 3), (2, 4)]
         network = Network(edges=edges)
@@ -71,19 +87,3 @@ class NetworkTestCase(TestCase):
         )
         network.apply_move_sequence([move])
         assert network.edges == set(edges)
-
-    def test_child(self):
-        edges = [(0, 1), (1, 2), (1, 3)]
-        network = Network(edges=edges)
-        assert network.child(0) == 1
-        assert network.child(1, exclude=[2, 5]) == 3
-        with mock.patch("random.getrandbits", return_value=1):
-            assert network.child(1, randomNodes=True) == 3
-
-    def test_parent(self):
-        edges = [(0, 1), (2, 1), (1, 3)]
-        network = Network(edges=edges)
-        assert network.parent(3) == 1
-        assert network.parent(1, exclude=[2, 5]) == 0
-        with mock.patch("random.getrandbits", return_value=1):
-            assert network.parent(1, randomNodes=True) == 2
