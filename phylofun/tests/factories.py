@@ -14,3 +14,10 @@ class RearrangementProblemFactory(factory.django.DjangoModelFactory):
 
     network1 = factory.SubFactory(NetworkFactory)
     network2 = factory.SubFactory(NetworkFactory)
+
+
+class RearrangementSolutionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.RearrangementSolutionModel
+
+    problem = factory.SubFactory(RearrangementProblemFactory)
