@@ -112,3 +112,12 @@ class BinaryTestCase(TestCase):
         ]
         network = Network(edges=edges)
         assert not network.is_binary()
+
+    def test_multi_rooted_network(self):
+        edges = [(0, 1), (2, 1), (1, 3), (4, 3), (3, 5)]
+        network = Network(edges=edges)
+        assert network.is_binary()
+
+        edges = [(0, 1), (1, 2), (1, 3), (4, 5), (5, 6), (5, 7)]
+        network = Network(edges=edges)
+        assert network.is_binary()
