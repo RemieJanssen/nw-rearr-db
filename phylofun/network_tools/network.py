@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import networkx as nx
 
-from .exceptions import InvalidMove, InvalidReduction
+from .exceptions import CannotComputeError, InvalidMove, InvalidReduction
 from .movetype import MoveType
 
 
@@ -255,6 +255,10 @@ class Network(nx.DiGraph):
         return True
 
     def is_tree_based(self):
+        if not self.is_binary():
+            raise CannotComputeError(
+                "tree-basedness cannot be computed for non-binary networks yet."
+            )
         for node in self.nodes:
             if self.is_endpoint_of_w_fence(node):
                 return False

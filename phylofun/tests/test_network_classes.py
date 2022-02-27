@@ -1,7 +1,7 @@
 import pytest
 from django.test import TestCase
 
-from phylofun.network_tools import Network
+from phylofun.network_tools import CannotComputeError, Network
 
 
 @pytest.mark.network_tools
@@ -87,6 +87,7 @@ class BinaryTestCase(TestCase):
         network = Network(edges=edges)
         assert network.is_binary()
 
+    def test_non_binary_tree(self):
         edges = [(0, 1), (1, 2), (1, 3), (3, 4), (3, 5), (3, 6), (2, 7)]
         network = Network(edges=edges)
         assert not network.is_binary()
@@ -96,10 +97,12 @@ class BinaryTestCase(TestCase):
         network = Network(edges=edges)
         assert network.is_binary()
 
+    def test_network_non_binary_tree_node(self):
         edges = [(0, 1), (1, 2), (1, 3), (2, 3), (2, 4), (3, 5), (1, 7)]
         network = Network(edges=edges)
         assert not network.is_binary()
 
+    def test_network_non_binary_reticulation(self):
         edges = [
             (0, 1),
             (1, 2),
@@ -118,6 +121,23 @@ class BinaryTestCase(TestCase):
         network = Network(edges=edges)
         assert network.is_binary()
 
+    def test_disjoint_trees(self):
         edges = [(0, 1), (1, 2), (1, 3), (4, 5), (5, 6), (5, 7)]
         network = Network(edges=edges)
         assert network.is_binary()
+
+
+class TreeBasedTestCase(TestCase):
+    def test_tree(self):
+        edges = [(0, 1), (1, 2), (1, 3), (3, 4), (3, 5), (2, 6), (2, 7)]
+        network = Network(edges=edges)
+        assert network.is_tree_based()
+
+    def test_non_binary_tree(self):
+        edges = [(0, 1), (1, 2), (1, 3), (3, 4), (3, 5), (3, 6), (2, 7)]
+        network = Network(edges=edges)
+        with pytest.raises(
+            CannotComputeError,
+            match="tree-basedness cannot be computed for non-binary networks yet.",
+        ):
+            network.is_tree_based()

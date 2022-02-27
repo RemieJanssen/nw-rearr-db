@@ -8,3 +8,7 @@ class InvalidMove(Exception):
 
 class InvalidReduction(Exception):
     pass
+
+
+class CannotComputeError(Exception):
+    pass
