@@ -46,26 +46,30 @@ class RearrangementSolutionSerializer(serializers.HyperlinkedModelSerializer):
         problem = data["problem"].rearrangement_problem
         network1 = problem.network1
         network2 = problem.network2
-        if isomorphism:
-            nodes_nw_1 = [x[0] for x in isomorphism]
-            nodes_nw_1_set = set(nodes_nw_1)
-            nodes_nw_2 = [x[1] for x in isomorphism]
-            nodes_nw_2_set = set(nodes_nw_2)
-            if not (
-                len(nodes_nw_1) == len(nodes_nw_1_set)
-                and len(nodes_nw_2) == len(nodes_nw_2_set)
-            ):
-                raise serializers.ValidationError(
-                    "Each node may be mapped only once."
-                )
-            if not set(nodes_nw_1) == set(network1.nodes):
-                raise serializers.ValidationError(
-                    "Isomorphism nodes should cover all nodes of network 1."
-                )
-            if not set(nodes_nw_2) == set(network2.nodes):
-                raise serializers.ValidationError(
-                    "Isomorphism nodes should cover all nodes of network 2."
-                )
+        if not isomorphism and network1.nodes:
+            raise serializers.ValidationError(
+                "Must provide an isomorphism for non-trivial networks"
+            )
+
+        nodes_nw_1 = [x[0] for x in isomorphism]
+        nodes_nw_1_set = set(nodes_nw_1)
+        nodes_nw_2 = [x[1] for x in isomorphism]
+        nodes_nw_2_set = set(nodes_nw_2)
+        if not (
+            len(nodes_nw_1) == len(nodes_nw_1_set)
+            and len(nodes_nw_2) == len(nodes_nw_2_set)
+        ):
+            raise serializers.ValidationError(
+                "Each node may be mapped only once."
+            )
+        if not set(nodes_nw_1) == set(network1.nodes):
+            raise serializers.ValidationError(
+                "Isomorphism nodes should cover all nodes of network 1."
+            )
+        if not set(nodes_nw_2) == set(network2.nodes):
+            raise serializers.ValidationError(
+                "Isomorphism nodes should cover all nodes of network 2."
+            )
 
         # check whether the sequence solves the problem
         # TODO should return the isomorphism, of False
@@ -76,7 +80,7 @@ class RearrangementSolutionSerializer(serializers.HyperlinkedModelSerializer):
         if not solution_valid:
 
             raise serializers.ValidationError(
-                f"Sequence {'with isomorphism ' if isomorphism else ''} is not a valid solution for this problem."
+                "Sequence with isomorphism is not a valid solution for this problem."
             )
         return data
 

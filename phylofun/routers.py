@@ -1,6 +1,6 @@
 from collections import OrderedDict
-from rest_framework.routers import APIRootView
-from rest_framework.routers import DefaultRouter
+
+from rest_framework.routers import APIRootView, DefaultRouter
 
 
 class OrderedDefaultRouter(DefaultRouter):
@@ -30,19 +30,3 @@ class OrderedDefaultRouter(DefaultRouter):
         d.update(self.extra_api_root_dict)
         d = OrderedDict(sorted(d.items()))
         return APIRootView.as_view(api_root_dict=d)
-
-    def add_to_view(self, prefix, name):
-        """Add an endpoint to be rendered.
-
-            def get(self, request, format=None):
-                ret = {}
-                for key, url_name in api_root_dict.items():
-                    ret[key] = reverse(
-                        url_name, request=request, format=format)
-                sorted_ret = collections.OrderedDict(sorted(ret.items()))
-                return Response(sorted_ret)
-        ViewSets can be registered, function-based views not. This is where
-        this method comes in handy.
-
-        """
-        self.extra_api_root_dict[prefix] = name
