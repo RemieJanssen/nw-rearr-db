@@ -62,15 +62,20 @@ class Network(nx.DiGraph):
         py = self.parent(y)
         ppy = self.parent(py)
         if px == py:
-            self.remove_edges_from([(ppy, py), (py, x), (py, y)])
-            self.add_edge(ppy, y)
+            if self.out_degree(px) == 2:
+                self.remove_edges_from([(ppy, py), (py, y)])
+                self.add_edge(ppy, y)
+            self.remove_edge(py, x)
             return "cherry"
         if py in self.predecessors(px):
             ppx = self.parent(px, exclude=[py])
-            self.remove_edges_from(
-                [(ppy, py), (py, px), (py, y), (ppx, px), (px, x)]
-            )
-            self.add_edges_from([(ppy, y), (ppx, x)])
+            if self.out_degree(py) == 2:
+                self.remove_edges_from([(ppy, py), (py, y)])
+                self.add_edge(ppy, y)
+            if self.in_degree(px) == 2:
+                self.remove_edges_from([(ppx, px), (px, x)])
+                self.add_edge(ppx, x)
+            self.remove_edge(py, px)
             return "reticulated_cherry"
         raise InvalidReduction("Trying to reduce an irreducible pair.")
 
@@ -185,7 +190,7 @@ class Network(nx.DiGraph):
         return parent
 
     def is_reticulation(self, node):
-        return self.out_degree(node) == 1 and self.in_degree(node) > 1
+        return self.out_degree(node) <= 1 and self.in_degree(node) > 1
 
     def is_leaf(self, node):
         return self.out_degree(node) == 0 and self.in_degree(node) > 0
@@ -194,7 +199,7 @@ class Network(nx.DiGraph):
         return self.in_degree(node) == 0
 
     def is_tree_node(self, node):
-        return self.out_degree(node) > 1 and self.in_degree(node) == 1
+        return self.out_degree(node) > 1 and self.in_degree(node) <= 1
 
     def is_endpoint_of_w_fence(self, node):
         if not self.is_reticulation(node):
@@ -236,7 +241,6 @@ class Network(nx.DiGraph):
         for node in self.nodes:
             if self.is_leaf(node):
                 continue
-            print(node)
             if all(
                 [
                     self.is_reticulation(child)
@@ -249,7 +253,10 @@ class Network(nx.DiGraph):
     def is_stack_free(self):
         for node in self.nodes:
             if self.is_reticulation(node) and any(
-                [self.is_reticulation(node) for child in self.successors(node)]
+                [
+                    self.is_reticulation(child)
+                    for child in self.successors(node)
+                ]
             ):
                 return False
         return True
@@ -259,6 +266,12 @@ class Network(nx.DiGraph):
             raise CannotComputeError(
                 "tree-basedness cannot be computed for non-binary networks yet."
             )
+        if not nx.is_weakly_connected(self):
+            return False
+
+        if len(self.roots) > 1:
+            return False
+
         for node in self.nodes:
             if self.is_endpoint_of_w_fence(node):
                 return False
@@ -281,10 +294,12 @@ class Network(nx.DiGraph):
         while not done:
             checked_all_leaves = True
             for leaf in leaves:
+                print("leaf", leaf)
                 pair = network_copy.is_second_in_reducible_pair(leaf)
+                print("pair", pair)
                 if pair:
                     reduced = network_copy.reduce_pair(pair)
-                    if reduced == "C":
+                    if reduced == "cherry":
                         leaves.remove(pair[0])
                     checked_all_leaves = False
                     break
