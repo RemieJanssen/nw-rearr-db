@@ -55,7 +55,7 @@ class Network(nx.DiGraph):
         return False
 
     def reduce_pair(self, pair):
-        x, y = *pair
+        x, y = pair
         if not self.is_leaf(x) or not self.is_leaf(y):
             raise InvalidReduction("Can only reduce reducible leaf pairs.")
         px = self.parent(x)
@@ -227,15 +227,16 @@ class Network(nx.DiGraph):
             [1, 0],  # leaf
         ]
         for node in self.nodes:
-            degrees = [self.in_degree(node), self.out_degree_node]
+            degrees = [self.in_degree(node), self.out_degree(node)]
             if degrees not in binary_node_types:
                 return False
         return True
 
     def is_tree_child(self):
         for node in self.nodes:
-            if not self.successors(node):
+            if self.is_leaf(node):
                 continue
+            print(node)
             if all(
                 [
                     self.is_reticulation(child)
