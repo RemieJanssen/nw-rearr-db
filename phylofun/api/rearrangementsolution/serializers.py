@@ -58,7 +58,6 @@ class RearrangementSolutionSerializer(serializers.HyperlinkedModelSerializer):
                 raise serializers.ValidationError(
                     "Each node may be mapped only once."
                 )
-            print(set(nodes_nw_1), set(network1.nodes))
             if not set(nodes_nw_1) == set(network1.nodes):
                 raise serializers.ValidationError(
                     "Isomorphism nodes should cover all nodes of network 1."
