@@ -1,7 +1,7 @@
 import networkx as nx
 from rest_framework import serializers
 
-from phylofun.models import NetworkModel
+from phylofun.models import NetworkClass, NetworkModel
 from phylofun.network_tools import Network
 
 
@@ -46,6 +46,16 @@ class NetworkSerializer(serializers.HyperlinkedModelSerializer):
         self.validated_data["nodes"] = self.validated_data.get("nodes", [])
         node_set = set(self.validated_data["nodes"])
         self.validated_data["nodes"] += list(set(n.nodes).difference(node_set))
+        self.validated_data["binary"] = n.is_binary()
+        self.validated_data["classes"] = [
+            c.value
+            for c in NetworkClass
+            if n.check_class(c) and c != NetworkClass.BI
+        ]
+
+        self.validated_data["number_of_roots"] = len(n.roots)
+        self.validated_data["number_of_leaves"] = len(n.leaves)
+        self.validated_data["reticulation_number"] = n.reticulation_number
         super().save()
 
     class Meta:
@@ -57,3 +67,8 @@ class NetworkSerializer(serializers.HyperlinkedModelSerializer):
                 "view_name": "api:network-detail",
             },
         }
+
+
+class NetworkViewSerializer(NetworkSerializer):
+    class Meta(NetworkSerializer.Meta):
+        fields = "__all__"

@@ -9,7 +9,13 @@ from phylofun.models import (
 
 @admin.register(NetworkModel)
 class NetworkAdmin(admin.ModelAdmin):
-    list_display = ("id",)  # TODO add rearrangement problems
+    list_display = (
+        "id",
+        "binary",
+        "number_of_roots",
+        "number_of_leaves",
+        "reticulation_number",
+    )  # TODO add rearrangement problems
 
 
 @admin.register(RearrangementProblemModel)
