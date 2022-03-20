@@ -4,6 +4,11 @@ from phylofun import models
 
 
 class NetworkFactory(factory.django.DjangoModelFactory):
+    number_of_roots = 0
+    number_of_leaves = 0
+    reticulation_number = 0
+    binary = True
+
     class Meta:
         model = models.NetworkModel
 

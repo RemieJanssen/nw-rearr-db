@@ -284,7 +284,8 @@ class Network(nx.DiGraph):
             raise CannotComputeError(
                 "tree-basedness cannot be computed for non-binary networks yet."
             )
-        if not nx.is_weakly_connected(self):
+
+        if len(self) > 0 and not nx.is_weakly_connected(self):
             return False
 
         if len(self.roots) > 1:
@@ -296,6 +297,8 @@ class Network(nx.DiGraph):
         return True
 
     def is_orchard(self):
+        if len(self) == 0:
+            return True
         leaves = self.leaves
         root = list(self.roots)[0]
 
