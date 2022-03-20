@@ -5,6 +5,7 @@ import networkx as nx
 
 from .exceptions import CannotComputeError, InvalidMove, InvalidReduction
 from .movetype import MoveType
+from .networkclasses import NetworkClass
 
 
 def same_labels(node1_attr, node2_attr):
@@ -40,6 +41,10 @@ class Network(nx.DiGraph):
     @property
     def roots(self):
         return set([node for node in self.nodes if self.is_root(node)])
+
+    @property
+    def reticulation_number(self):
+        return sum([max(self.in_degree(node) - 1, 0) for node in self.nodes])
 
     def is_second_in_reducible_pair(self, x):
         px = self.parent(x)
@@ -222,6 +227,19 @@ class Network(nx.DiGraph):
             currently_at_fence_top = not currently_at_fence_top
 
     ## network classes
+
+    def check_class(self, network_class):
+        if network_class == NetworkClass.BI:
+            return self.is_binary()
+        if network_class == NetworkClass.TC:
+            return self.is_tree_child()
+        if network_class == NetworkClass.OR:
+            return self.is_orchard()
+        if network_class == NetworkClass.SF:
+            return self.is_stack_free()
+        if network_class == NetworkClass.TB:
+            return self.is_tree_based()
+        raise CannotComputeError("network_class is not defined")
 
     def is_binary(self):
         binary_node_types = [
