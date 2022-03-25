@@ -56,6 +56,7 @@ class NetworkSerializer(serializers.HyperlinkedModelSerializer):
         self.validated_data["number_of_roots"] = len(n.roots)
         self.validated_data["number_of_leaves"] = len(n.leaves)
         self.validated_data["reticulation_number"] = n.reticulation_number
+        self.validated_data["node_positions"] = n.calculate_node_positions()
         super().save()
 
     class Meta:
