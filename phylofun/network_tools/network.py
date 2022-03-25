@@ -8,6 +8,8 @@ from .movetype import MoveType
 from .networkclasses import NetworkClass
 
 LEVEL_BOUNDARY = 0.05
+TREE_CHILD_JITTER = 0.03
+RETICULATION_CHILD_JITTER = 0.06
 
 
 def same_labels(node1_attr, node2_attr):
@@ -48,9 +50,15 @@ class Network(nx.DiGraph):
     def reticulation_number(self):
         return sum([max(self.in_degree(node) - 1, 0) for node in self.nodes])
 
+    def clip_to_playing_field(self, pos):
+        return max(
+            min(pos, 1.0 - LEVEL_BOUNDARY),
+            LEVEL_BOUNDARY,
+        )
+
     def calculate_node_positions(self):
-        # determine the x-pos of the leaves with a dfs, other nodes follow
-        # y positions are
+        # determine the x-pos of the leaves with a dfs, other nodes follow more or less
+        # y positions are computed depending on children's y coordinates
         # all positions must lie within the unit square
 
         # dfs for x positions
@@ -73,27 +81,37 @@ class Network(nx.DiGraph):
         number_of_sinks = len(ordered_sinks)
         node_x_positions = {
             node: LEVEL_BOUNDARY
-            + (1.0 - 2 * LEVEL_BOUNDARY) * i / (number_of_sinks - 1)
+            + (1.0 - 2 * LEVEL_BOUNDARY) * (i + 1) / (number_of_sinks + 1)
             for i, node in enumerate(ordered_sinks)
         }
+        print(node_x_positions)
         node_y_positions = {node: 0 for node in ordered_sinks}
         current_nodes = [
             node
             for node in self.nodes
             if node not in nodes_done
-            and all([x in nodes_done for x in self.successors])
+            and all([x in nodes_done for x in self.successors(node)])
         ]
 
         while current_nodes:
-            current_node = curr_nodes.pop()
+            current_node = current_nodes.pop()
             nodes_done.add(current_node)
 
             children_xs = [
                 node_x_positions[node]
                 for node in self.successors(current_node)
             ]
-            node_x_positions[current_node] = sum(children_xs) / len(
-                children_xs
+
+            jitter = TREE_CHILD_JITTER
+            if (
+                self.out_degree(current_node) == 1
+                and self.out_degree(self.child(current_node)) == 1
+            ):
+                jitter = RETICULATION_CHILD_JITTER
+
+            node_x_positions[current_node] = self.clip_to_playing_field(
+                float(sum(children_xs)) / len(children_xs)
+                + (random.random() - 0.5) * (2 * jitter)
             )
             children_ys = [
                 node_y_positions[node]
@@ -105,20 +123,36 @@ class Network(nx.DiGraph):
                 if all(
                     [child in nodes_done for child in self.successors(parent)]
                 ):
-                    curr_nodes.add(parent)
+                    current_nodes.append(parent)
 
         max_y = max(node_y_positions.values())
-        node_pos_list = [
-            (
-                node,
-                node_x_positions[node],
+        node_pos_list = []
+        max_y_jitter = (1.0 - 2 * LEVEL_BOUNDARY) / max_y / 2
+        tc_jitter_y = min(TREE_CHILD_JITTER, max_y_jitter)
+        retic_jitter_y = min(RETICULATION_CHILD_JITTER, max_y_jitter)
+        for node in self.nodes:
+            jitter = tc_jitter_y
+            if (
+                self.out_degree(current_node) == 1
+                and self.out_degree(self.child(current_node)) == 1
+            ):
+                jitter = retic_jitter_y
+
+            y_pos = self.clip_to_playing_field(
                 LEVEL_BOUNDARY
                 + (1.0 - 2 * LEVEL_BOUNDARY)
                 * (max_y - node_y_positions[node])
-                / max_y,
+                / max_y
+                + (random.random() - 0.5) * (2 * jitter)
             )
-            for node in self.nodes
-        ]
+
+            node_pos_list.append(
+                (
+                    node,
+                    node_x_positions[node],
+                    y_pos,
+                )
+            )
         return node_pos_list
 
     def is_second_in_reducible_pair(self, x):
