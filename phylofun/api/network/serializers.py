@@ -63,7 +63,7 @@ class NetworkSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = NetworkModel
-        fields = ("id", "url", "nodes", "edges", "labels")
+        fields = ("id", "url", "nodes", "edges", "labels", "node_positions")
         extra_kwargs = {
             "url": {
                 "lookup_field": "pk",

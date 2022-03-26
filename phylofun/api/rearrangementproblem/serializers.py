@@ -12,8 +12,6 @@ class RearrangementProblemSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = RearrangementProblemModel
         fields = (
-            "id",
-            "url",
             "network1",
             "network2",
             "move_type",
@@ -43,4 +41,4 @@ class RearrangementProblemViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RearrangementProblemModel
-        fields = ("network1", "network2", "move_type", "vertical_allowed")
+        fields = "__all__"
