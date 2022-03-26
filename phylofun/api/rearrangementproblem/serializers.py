@@ -18,6 +18,7 @@ class RearrangementProblemSerializer(serializers.HyperlinkedModelSerializer):
             "network2",
             "move_type",
             "vertical_allowed",
+            "goal_length",
         )
         extra_kwargs = {
             "url": {
