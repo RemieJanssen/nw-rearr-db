@@ -11,7 +11,14 @@ class RearrangementProblemSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = RearrangementProblemModel
-        fields = ("network1", "network2", "move_type", "vertical_allowed")
+        fields = (
+            "id",
+            "url",
+            "network1",
+            "network2",
+            "move_type",
+            "vertical_allowed",
+        )
         extra_kwargs = {
             "url": {
                 "lookup_field": "pk",
