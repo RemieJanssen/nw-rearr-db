@@ -19,6 +19,7 @@ class RearrangementProblemFactory(factory.django.DjangoModelFactory):
 
     network1 = factory.SubFactory(NetworkFactory)
     network2 = factory.SubFactory(NetworkFactory)
+    goal_length = 10
 
 
 class RearrangementSolutionFactory(factory.django.DjangoModelFactory):
