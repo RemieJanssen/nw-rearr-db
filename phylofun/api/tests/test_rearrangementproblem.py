@@ -38,6 +38,7 @@ class RearrangementProblemTestCase(APITestCase):
             "network1": reverse("api:network-detail", (self.nw1.id,)),
             "network2": reverse("api:network-detail", (self.nw2.id,)),
             "move_type": "tail moves",
+            "goal_length": 5,
         }
         result = self.client.post(self.list_url, body, format="json")
         assert result.status_code == status.HTTP_201_CREATED
@@ -48,6 +49,7 @@ class RearrangementProblemTestCase(APITestCase):
             "network2": reverse("api:network-detail", (self.nw2.id,)),
             "move_type": "head moves",
             "vertical_allowed": "False",
+            "goal_length": 5,
         }
         result = self.client.post(self.list_url, body, format="json")
         assert result.status_code == status.HTTP_201_CREATED

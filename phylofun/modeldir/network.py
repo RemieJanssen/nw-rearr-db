@@ -12,6 +12,8 @@ class NetworkModel(models.Model):
     edges = models.JSONField(default=list)
     labels = models.JSONField(default=list)
 
+    node_positions = models.JSONField(default=list)
+
     number_of_roots = models.IntegerField()
     number_of_leaves = models.IntegerField()
     reticulation_number = models.IntegerField()

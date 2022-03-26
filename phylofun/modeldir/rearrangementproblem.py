@@ -26,6 +26,7 @@ class RearrangementProblemModel(models.Model):
         "move type", choices=MOVE_TYPES, default=MoveType.NONE, max_length=4
     )
     vertical_allowed = models.BooleanField(default=False)
+    goal_length = models.IntegerField()
 
     @property
     def rearrangement_problem(self):
