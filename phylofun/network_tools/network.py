@@ -126,7 +126,7 @@ class Network(nx.DiGraph):
                     current_nodes.append(parent)
 
         max_y = max(list(node_y_positions.values()) + [0])
-        node_pos_dict = dict()
+        node_pos_list = []
         max_y_jitter = (1.0 - 2 * LEVEL_BOUNDARY) / (max_y + 1) / 2
         tc_jitter_y = min(TREE_CHILD_JITTER, max_y_jitter)
         retic_jitter_y = min(RETICULATION_CHILD_JITTER, max_y_jitter)
@@ -145,8 +145,8 @@ class Network(nx.DiGraph):
                 * (1.0 - node_y_positions[node] / max_y)
             )
 
-            node_pos_dict[node] = (node_x_positions[node], y_pos)
-        return node_pos_dict
+            node_pos_list.append([node, node_x_positions[node], y_pos])
+        return node_pos_list
 
     def is_second_in_reducible_pair(self, x):
         px = self.parent(x)
