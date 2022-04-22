@@ -1,7 +1,7 @@
 version: '2'
 services:
 
-  # Note: symlink docker-compose.development.yml to
+  # note; symlink docker-compose.development.yml to
   # docker-compose.override.yml when developing.
 
   db:

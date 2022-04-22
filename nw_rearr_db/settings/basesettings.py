@@ -53,7 +53,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'nw_rearr_db.urls'
+ROOT_URLCONF = "nw_rearr_db.urls"
 
 TEMPLATES = [
     {
@@ -71,7 +71,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'nw_rearr_db.wsgi.application'
+WSGI_APPLICATION = "nw_rearr_db.wsgi.application"
 
 
 # Password validation
@@ -108,13 +108,13 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'phylofun_db',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "phylofun_db",
         "USER": "buildout",
         "PASSWORD": "buildout",
-        'HOST': 'db',
-        'PORT': 5432,
+        "HOST": "db",
+        "PORT": 5432,
     }
 }
 
@@ -127,12 +127,12 @@ STATIC_ROOT = BASE_DIR / "var" / "static"
 STATIC_URL = "/static_media/"
 
 
-
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://phylofun\.remiejanssen\.nl",
-    r"^https://\w+\.remiejanssen\.nl",
+    r"^https?://phylofun\.remiejanssen\.nl",
+    r"^https?://\w+\.remiejanssen\.nl",
+    "remiejanssen\.nl",
 ]
 
 # Default primary key field type
