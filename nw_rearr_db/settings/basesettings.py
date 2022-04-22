@@ -132,7 +132,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https?://phylofun\.remiejanssen\.nl",
     r"^https?://\w+\.remiejanssen\.nl",
-    "remiejanssen\.nl",
+    r"^https?://remiejanssen\.nl",
 ]
 
 # Default primary key field type
