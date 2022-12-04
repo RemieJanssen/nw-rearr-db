@@ -21,7 +21,7 @@ services:
     command: bin/gunicorn -b 0.0.0.0:8000 --workers=3 --preload --max-requests=10000 nw_rearr_db.wsgi
     # Expose port 8000 to the outside world via port 80 of the host machine
     ports:
-      - 80:8000
+      - 7771:8000
     volumes:
       - media:/code/var/media
     environment:
